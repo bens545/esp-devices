@@ -1,0 +1,38 @@
+substitutions:
+  devicename: testnode
+  upper_devicename: TestNode
+
+# Enable logging
+logger:
+
+output:
+  - platform: gpio
+    pin:
+      number: D0
+      inverted: True
+    id: gpio_d0
+light:
+  - platform: binary
+    name: "Desk Lamp"
+    output: gpio_d0
+    effects:
+      - strobe:
+sensor:
+  - platform: dht
+    pin: D3
+    model: DHT22_TYPE2
+    temperature:
+      name: "Temp"
+      filters:
+        - median: 
+            window_size: 5
+            send_every: 5
+    humidity:
+      name: "Humid"
+      filters:
+        - median: 
+            window_size: 5
+            send_every: 5
+    update_interval: 20s
+
+<<: !include common.yaml

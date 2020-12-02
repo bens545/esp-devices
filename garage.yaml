@@ -1,0 +1,45 @@
+substitutions:
+  devicename: garage
+  upper_devicename: Garage
+
+<<: !include common.yaml
+
+# Enable logging
+logger:
+
+debug:
+
+binary_sensor:
+  - platform: gpio
+    device_class: garage_door
+    name: "Garage Door Left"
+    pin:
+      number: D1
+      inverted: True
+    filters:
+      - delayed_on_off: 500ms
+  - platform: gpio
+    device_class: garage_door
+    name: "Garage Door Right"
+    pin:
+      number: D2
+      inverted: True
+    filters:
+      - delayed_on_off: 500ms
+sensor:
+  - platform: dht
+    pin: D3
+    model: DHT22_TYPE2
+    temperature:
+      name: ${upper_devicename} Temperature
+      filters:
+        - median:
+            window_size: 5
+            send_every: 5
+    humidity:
+      name: ${upper_devicename} Humidity
+      filters:
+        - median:
+            window_size: 5
+            send_every: 5
+    update_interval: 20s
