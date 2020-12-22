@@ -5,6 +5,10 @@ substitutions:
 # Enable logging
 logger:
 
+i2c:
+  sda: D2
+  scl: D1
+
 output:
   - platform: gpio
     pin:
@@ -23,16 +27,77 @@ sensor:
     model: DHT22_TYPE2
     temperature:
       name: "Temp"
+      id: temp
+      unit_of_measurement: "°F"
       filters:
         - median: 
             window_size: 5
             send_every: 5
+        - lambda: return x * (9.0/5.0) + 32.0;
     humidity:
       name: "Humid"
+      id: humid
       filters:
         - median: 
             window_size: 5
             send_every: 5
     update_interval: 20s
+  - platform: homeassistant
+    name: "NWS Temperature"
+    entity_id: sensor.nws_temperature
+    id: nws_temperature
+    internal: true
+  - platform: homeassistant
+    name: "NWS Humidity"
+    entity_id: sensor.nws_humidity
+    id: nws_humidity
+    internal: true
+text_sensor:
+  - platform: homeassistant
+    name: "NWS"
+    entity_id: weather.nws_daynight 
+    id: nws
+    internal: true
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    id: my_display
+    pages:
+      - id: page1
+        lambda: |-
+          it.print(0, 0, id(freeSans2), "Time");
+          it.strftime(0, 20, id(freeSans2), "%a %b %d %Y", id(h_time).now());
+          it.strftime(0, 40, id(freeSans), "%I:%M:%S %p", id(h_time).now());
+      - id: page2
+        lambda: |-
+          it.print(0, 0, id(freeSans2), "Indoors");
+          it.printf(0, 25, id(freeSans), "T: %.1f °F", id(temp).state);
+          it.printf(0, 45, id(freeSans), "H: %.1f%%", id(humid).state);
+      - id: page3
+        lambda: |-
+          it.print(0, 0, id(freeSans2), "Outdoors");
+          it.printf(0, 38, id(freeSans), "T: %.0f °F", id(nws_temperature).state);
+          it.printf(0, 55, id(freeSans), "H: %.0f%%", id(nws_humidity).state);
+          it.printf(0, 23, id(freeSans2), "%s", id(nws).state.c_str());
+
+interval:
+  - interval: 5s
+    then:
+      - display.page.show_next: my_display
+      - component.update: my_display
+
+font:
+  - file: "FreeSans.ttf"
+    id: freeSans
+    size: 20
+  - file: "FreeSans.ttf"
+    id: freeSans2
+    size: 10
+
+time:
+  - platform: homeassistant
+    id: h_time
 
 <<: !include common.yaml
