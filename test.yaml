@@ -18,6 +18,7 @@ output:
 light:
   - platform: binary
     name: "Desk Lamp"
+    id: desk_lamp
     output: gpio_d0
     effects:
       - strobe:
@@ -44,20 +45,35 @@ sensor:
     update_interval: 20s
   - platform: homeassistant
     name: "NWS Temperature"
-    entity_id: sensor.nws_temperature
+    entity_id: sensor.kptw_temperature
     id: nws_temperature
     internal: true
   - platform: homeassistant
     name: "NWS Humidity"
-    entity_id: sensor.nws_humidity
+    entity_id: sensor.kptw_humidity
     id: nws_humidity
     internal: true
 text_sensor:
   - platform: homeassistant
     name: "NWS"
-    entity_id: weather.nws_daynight 
+    entity_id: weather.kptw_daynight 
     id: nws
     internal: true
+
+binary_sensor:
+  - platform: gpio
+    pin: D6
+    name: "PIR Sensor"
+    device_class: motion
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      then:
+        - light.turn_on: desk_lamp
+    on_release:
+      then:
+        - light.turn_off: desk_lamp
 
 display:
   - platform: ssd1306_i2c
@@ -78,8 +94,10 @@ display:
       - id: page3
         lambda: |-
           it.print(0, 0, id(freeSans2), "Outdoors");
-          it.printf(0, 38, id(freeSans), "T: %.0f °F", id(nws_temperature).state);
-          it.printf(0, 55, id(freeSans), "H: %.0f%%", id(nws_humidity).state);
+          it.print(0, 43, id(material_icons), TextAlign::BASELINE_LEFT, "\U000F050F");
+          it.printf(20, 38, id(freeSans), "%.0f °F", id(nws_temperature).state);
+          it.printf(0, 62, id(material_icons), TextAlign::BASELINE_LEFT, "\U000F058E");
+          it.printf(20, 55, id(freeSans), "%.0f%%", id(nws_humidity).state);
           it.printf(0, 23, id(freeSans2), "%s", id(nws).state.c_str());
 
 interval:
@@ -89,15 +107,48 @@ interval:
       - component.update: my_display
 
 font:
-  - file: "FreeSans.ttf"
+  - file: "fonts/FreeSans.ttf"
     id: freeSans
     size: 20
-  - file: "FreeSans.ttf"
+  - file: "fonts/FreeSans.ttf"
     id: freeSans2
     size: 10
+  - file: 'fonts/materialIcons.ttf'
+    id: material_icons
+    size: 20
+    glyphs:
+      - "\U000F050F" # mdi-thermometer
+      - "\U000F058E" # mdi-water-percent
 
 time:
   - platform: homeassistant
     id: h_time
 
-<<: !include common.yaml
+# spi:
+#   clk_pin: D0
+#   mosi_pin: D1
+
+# display:
+#   - platform: waveshare_epaper
+#     cs_pin: D2
+#     dc_pin: D5
+#     busy_pin: D6
+#     reset_pin: D7
+#     model: 4.20in
+#     update_interval: 60s
+#     lambda: |-
+#       it.strftime(0, 0, id(freeSans), "%a %b, %d %Y", id(h_time).now());
+#       it.strftime(0, 20, id(freeSans), "%I:%M %p", id(h_time).now());
+      
+#       it.print(0, 75, id(freeSans2), "Outdoors");
+#       it.printf(0, 100, id(freeSans), "T: %.0f °F", id(nws_temperature).state);
+#       it.printf(0, 120, id(freeSans), "H: %.0f%%", id(nws_humidity).state);
+#       it.printf(0, 140, id(freeSans), "%s", id(nws).state.c_str());
+
+#       it.print(200, 0, id(freeSans2), "Indoors");
+#       it.printf(180, 25, id(material_icons), TextAlign::BOTTOM_LEFT, "\U000F050F");
+#       it.printf(200, 25, id(freeSans), "T: %.1f °F", id(temp).state);
+#       it.printf(180, 45, id(material_icons), TextAlign::BASELINE_LEFT, "\U000F058E");
+#       it.printf(200, 45, id(freeSans), "H: %.1f%%", id(humid).state);
+
+<<: !include shared/esp8266.yaml

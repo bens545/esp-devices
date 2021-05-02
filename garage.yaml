@@ -2,12 +2,25 @@ substitutions:
   devicename: garage
   upper_devicename: Garage
 
-<<: !include common.yaml
+<<: !include shared/esp8266.yaml
 
 # Enable logging
 logger:
 
 debug:
+
+output:
+  - platform: gpio
+    pin:
+      number: D0
+      inverted: true
+    id: gpio_d0
+
+light:
+  - platform: binary
+    id: led0
+    output: gpio_d0
+    internal: true
 
 binary_sensor:
   - platform: gpio
@@ -26,6 +39,13 @@ binary_sensor:
       inverted: True
     filters:
       - delayed_on_off: 500ms
+    on_press:
+      then:
+        - light.turn_off: led0
+    on_release:
+      then:
+        - light.turn_on: led0
+
 sensor:
   - platform: dht
     pin: D3
