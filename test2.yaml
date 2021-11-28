@@ -8,6 +8,10 @@ logger:
 binary_sensor:
   - platform: status
     name: "TestNode2 Status"
+  - platform: homeassistant
+    entity_id: binary_sensor.garage_door_right
+    id: garage_door_right
+    internal: true
 
 # deep_sleep:
 #   run_duration: 15s
@@ -48,9 +52,37 @@ sensor:
     id: indoor_humidity
     internal: true
   - platform: homeassistant
+    entity_id: sensor.garage_temperature
+    id: garage_temp
+    internal: true
+  - platform: homeassistant
+    entity_id: sensor.garage_humidity
+    id: garage_humidity
+    internal: true
+  - platform: homeassistant
     entity_id: sensor.kptw_minmax
     id: nws_minmax
     internal: true
+  - platform: dht
+    pin: GPIO4
+    model: DHT22_TYPE2
+    temperature:
+      name: "Temp"
+      id: temp
+      unit_of_measurement: "°F"
+      filters:
+        - median: 
+            window_size: 5
+            send_every: 5
+        - lambda: return x * (9.0/5.0) + 32.0;
+    humidity:
+      name: "Humid"
+      id: humid
+      filters:
+        - median: 
+            window_size: 5
+            send_every: 5
+    update_interval: 20s
 text_sensor:
   - platform: homeassistant
     name: "NWS"
@@ -141,8 +173,9 @@ display:
 
       it.printf((it.get_width() - 250) / 2 + 250, 102, id(freeSans_20), TextAlign::TOP_CENTER, "Garage");
       it.printf(260, 130, id(freeSans_20), TextAlign::TOP_LEFT, "Door:");
-      it.printf(260, 160, id(freeSans_25), TextAlign::TOP_LEFT, "%.0f°F", id(indoor_temp).state);
-      it.printf(it.get_width() - 10, 160, id(freeSans_25), TextAlign::TOP_RIGHT, "%.0f%%", id(indoor_humidity).state);
+      it.printf(330, 130, id(freeSans_20), TextAlign::TOP_LEFT, "%s", id(garage_door_right).state ? "Open" : "Closed");
+      it.printf(260, 160, id(freeSans_25), TextAlign::TOP_LEFT, "%.0f°F", id(garage_temp).state);
+      it.printf(it.get_width() - 10, 160, id(freeSans_25), TextAlign::TOP_RIGHT, "%.0f%%", id(garage_humidity).state);
 
       if (id(nws).has_state()) {
         std::map<std::string, std::string> weather_state {

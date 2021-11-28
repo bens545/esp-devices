@@ -45,6 +45,9 @@ binary_sensor:
     on_release:
       then:
         - light.turn_on: led0
+  - platform: status
+    name: "${upper_devicename} Status"
+    id: "${devicename}_status"
 
 sensor:
   - platform: dht
@@ -63,3 +66,11 @@ sensor:
             window_size: 5
             send_every: 5
     update_interval: 20s
+  - platform: wifi_signal
+    name: "${upper_devicename} WiFi signal"
+    id: "${devicename}_wifi_signal"
+    update_interval: 60s
+  - platform: uptime
+    name: "${upper_devicename} Uptime"
+    id: "${devicename}_uptime"
+    update_interval: 60s
