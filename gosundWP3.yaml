@@ -1,0 +1,73 @@
+substitutions:
+  name: "wp3"
+  friendly_name: "WP3"
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  project:
+    name: bens545.wp3
+    version: "0.0.1"
+
+esp8266:
+  board: esp01_1m
+
+logger:
+api:
+ota:
+
+dashboard_import:
+  package_import_url: github://bens545/esp-devices/gosundWP3.yaml@master
+  import_full_config: false
+
+wifi:
+  ap:
+
+captive_portal:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Button"
+    id: "button"
+    on_press:
+      - switch.toggle: "relay"
+  - platform: status
+    name: "Status"
+    id: "status"
+
+switch:
+  - platform: gpio
+    name: "Relay"
+    id: "relay"
+    pin: GPIO15
+    on_turn_on:
+      - output.turn_on: led
+    on_turn_off:
+      - output.turn_off: led
+
+status_led:
+  pin:
+    number: GPIO0
+    inverted: yes
+
+output:
+  - platform: gpio
+    pin: GPIO2
+    inverted: true
+    id: led
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi signal"
+    id: "wifi_signal"
+    update_interval: 60s
+  - platform: uptime
+    name: "Uptime"
+    id: "uptime"
+    update_interval: 60s
+

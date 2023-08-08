@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: esp01_1m
 
-<<: !include shared/wifi.yaml
+<<: !include ../shared/wifi.yaml
 
 # Enable logging
 logger:
