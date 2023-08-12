@@ -38,7 +38,6 @@ binary_sensor:
       - switch.toggle: "relay"
   - platform: status
     name: "Status"
-    id: "status"
 
 switch:
   - platform: gpio
@@ -63,11 +62,10 @@ output:
 
 sensor:
   - platform: wifi_signal
-    name: "WiFi signal"
-    id: "wifi_signal"
+    name: "WiFi Signal dB"
+    id: "wifi_signal_db"
     update_interval: 60s
   - platform: uptime
     name: "Uptime"
-    id: "uptime"
     update_interval: 60s
 
