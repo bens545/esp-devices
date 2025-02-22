@@ -16,6 +16,7 @@ esp8266:
 logger:
 api:
 ota:
+  platform: esphome
 
 dashboard_import:
   package_import_url: github://bens545/esp-devices/gosundWP3.yaml@master
